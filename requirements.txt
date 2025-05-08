@@ -1,0 +1,8 @@
+snowflake-snowpark-python 
+toml
+python-dotenv
+snowflake
+dotenv
+pandas
+snowflake-ml-python
+streamlit_extras
