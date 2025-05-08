@@ -1,0 +1,5 @@
+
+[aiGround]
+warehouse = "compute_wh"
+database = "AI_GROUND"
+schema = "CORTEX"
