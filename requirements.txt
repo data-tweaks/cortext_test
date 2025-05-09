@@ -1,6 +1,5 @@
 snowflake-snowpark-python 
 toml
-python-dotenv
 snowflake
 dotenv
 pandas

@@ -225,9 +225,10 @@ def main():
         st.session_state.Compimg1_input = leftImage.file_uploader('**:grey[Upload the first image in PNG format]**', type= ['jpg', 'jpeg', 'png'])         
         if st.session_state.Compimg1_input is not None:
             img1Name = st.session_state.Compimg1_input.name
+            img1Type = st.session_state.Compimg1_input.type
             image1 = Image.open(st.session_state.Compimg1_input)
             buffer = io.BytesIO()
-            image1.save(buffer, format='PNG')
+            image1.save(buffer, format= img1Type)
             buffer.seek(0)
             with open(f"/tmp/{img1Name}", "wb") as f:
                 f.write(buffer.read())         
@@ -237,9 +238,10 @@ def main():
         # if file is uploaded then open the image 
         if st.session_state.CompImg2_input is not None:
             img2Name = st.session_state.CompImg2_input.name
+            img2Type = st.session_state.CompImg2_input.type
             image2 = Image.open(st.session_state.CompImg2_input)
             buffer = io.BytesIO()
-            image2.save(buffer, format='PNG')
+            image2.save(buffer, format= img2Type)
             buffer.seek(0)
             with open(f"/tmp/{img2Name}", "wb") as f:
                 f.write(buffer.read())
@@ -248,10 +250,10 @@ def main():
         if st.session_state.CompImg2_input  is not None and  st.session_state.Compimg1_input is not None:  
             leftImage.write(image1)
             leftImage.write(f" **:grey[Image 1 :]** {img1Name} ")
-            st.session_state.demo_session.file.put(f"/tmp/{img1Name}", "@IMAGE_REP", auto_compress=False)      
+            st.session_state.demo_session.file.put(f"/tmp/{img1Name}", "@IMAGE_REP", auto_compress=True)      
             rightImage.write(image2)
             rightImage.write(f" **:grey[Image 2 :]** {img2Name} ")
-            st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=False)
+            st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=True)
 
         # compare the images 
         if img2Name != "" and img1Name != "": 
@@ -297,5 +299,5 @@ def main():
             procContainer.write(answer) 
 
 
-# run main 
+# run main
 main()
