@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 import os
 import toml
 
@@ -7,7 +6,6 @@ from snowflake.snowpark.session import Session
 from snowflake.cortex import Complete
 
 import streamlit as st
-from streamlit_extras.stylable_container import stylable_container 
 import pandas as pd  
 import numpy as np
 import io 
@@ -16,7 +14,6 @@ from PIL import Image
 
 def snowpark_session_create(): 
  
-    load_dotenv("app/config/.env")
     config = toml.load("app/config/connections.toml")
     connConfig = config["aiGround"]
 
@@ -99,7 +96,7 @@ def execute_cortex_complete_api(prompt , session):
     if response_txt is not None: 
         return response_txt
     else:   
-        return "please choose another image, this image is not suitable for processesing. " 
+        return f"Sorry, I don't know the answer of your question." 
 
 
 def compare_images_via_cortex_SQL(session, img1_bytes, img2_bytes):
@@ -135,7 +132,7 @@ def compare_images_via_cortex_SQL(session, img1_bytes, img2_bytes):
     if response is not None: 
         return response[0][0]
     else:   
-        return "please choose another image, this image is not suitable for processesing. " 
+        return "Please choose another image, this image is not suitable for processesing. " 
 
 
 def analyze_images_via_cortex_SQL(session , imgName):
@@ -157,25 +154,25 @@ def analyze_images_via_cortex_SQL(session , imgName):
     if response is not None: 
         return response[0][0]
     else: 
-        return "please choose another image, this image is not suitable for processesing. " 
+        return "Please choose another image, this image is not suitable for processesing. " 
 
 
 def purgeAnalyzeStage(session):
     response = session.sql( f"""  remove @image_analyse  """).collect()
 
 
-
 def main(): 
     
+    #configure the app 
     config_app_UI() 
     initSession()
-
     snowpark_session_create()
        
     procContainer = st.container(border = True)
     clearButton,  cortexButtons =  procContainer.columns(2)
     analyseImgCol , compareImgCol , curiosityCol =  procContainer.columns(3)
 
+    #clear the session for a clean page 
     if clearButton.button("**:grey[CLEAR SESSION]**"):
         st.session_state.clearSess = True
         clearSession() 
@@ -184,7 +181,7 @@ def main():
     # CURIOSITY
     ###################################################################################
 
-
+    # set the session for curiosity function 
     if cortexButtons.button("  **:grey[ASK ME ANYTHING]** "):
         st.session_state.curiosity = True
 
@@ -196,7 +193,8 @@ def main():
             # Create Snowflake session only once
             if not st.session_state.demo_session:
                 st.session_state.demo_session = snowpark_session_create()
-                
+
+            # Return answer for the question     
             answer = execute_cortex_complete_api(st.session_state.prompt , st.session_state.demo_session )  
             procContainer.divider()
             procContainer.write(answer)
@@ -206,16 +204,15 @@ def main():
     # COMPARING IMAGES 
     ###########################################################################################
 
-
+    # set the session for comparing images 
     if cortexButtons.button(" **:grey[COMPARE IMAGES]** ")  :
-        st.session_state.curiosity = False
         st.session_state.compareImg = True
 
     if st.session_state.compareImg : 
-
         procContainer.header("**:grey[UPLOAD 2 IMAGES TO COMPARE!]**")
         procContainer.write("\n\n")
-
+       
+        # create the session if it is not created 
         if not st.session_state.demo_session:
             st.session_state.demo_session = snowpark_session_create()
 
@@ -223,9 +220,9 @@ def main():
         img2Name = ""
 
         leftImage , rightImage = procContainer.columns(2)
-
-        st.session_state.Compimg1_input = leftImage.file_uploader('**:grey[Upload the first image in PNG format]**', type='png') 
-        
+ 
+        # upload a file in jpg, jpeg or png mode 
+        st.session_state.Compimg1_input = leftImage.file_uploader('**:grey[Upload the first image in PNG format]**', type= ['jpg', 'jpeg', 'png'])         
         if st.session_state.Compimg1_input is not None:
             img1Name = st.session_state.Compimg1_input.name
             image1 = Image.open(st.session_state.Compimg1_input)
@@ -234,8 +231,10 @@ def main():
             buffer.seek(0)
             with open(f"/tmp/{img1Name}", "wb") as f:
                 f.write(buffer.read())         
-
-        st.session_state.CompImg2_input = rightImage.file_uploader('**:grey[Upload the second image in PNG format]**', type='png') 
+   
+        # upload a file in jpg, jpeg or png mode 
+        st.session_state.CompImg2_input = rightImage.file_uploader('**:grey[Upload the second image in PNG format]**',type= ['jpg', 'jpeg', 'png']) 
+        # if file is uploaded then open the image 
         if st.session_state.CompImg2_input is not None:
             img2Name = st.session_state.CompImg2_input.name
             image2 = Image.open(st.session_state.CompImg2_input)
@@ -245,6 +244,7 @@ def main():
             with open(f"/tmp/{img2Name}", "wb") as f:
                 f.write(buffer.read())
 
+        # put the images to the stage 
         if st.session_state.CompImg2_input  is not None and  st.session_state.Compimg1_input is not None:  
             leftImage.write(image1)
             leftImage.write(f" **:grey[Image 1 :]** {img1Name} ")
@@ -253,29 +253,30 @@ def main():
             rightImage.write(f" **:grey[Image 2 :]** {img2Name} ")
             st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=False)
 
+        # compare the images 
         if img2Name != "" and img1Name != "": 
             answer = compare_images_via_cortex_SQL( st.session_state.demo_session ,  img1Name ,img2Name )  
             procContainer.write(answer) 
 
 
-
     ###########################################################################################
     # ANALYZE IMAGES 
     ###########################################################################################
-  
 
-
+    # set the session for analyzing images 
     if cortexButtons.button(" **:grey[ANALYZE IMAGES]** ") :
         st.session_state.analyzeImg = True
-    if st.session_state.analyzeImg : 
 
+    if st.session_state.analyzeImg : 
         if not st.session_state.demo_session:
             st.session_state.demo_session = snowpark_session_create()
 
+        # remove the existing images from the stage 
         purgeAnalyzeStage(st.session_state.demo_session)
         image = ""
 
-        st.session_state.anlyzImg1_input = procContainer.file_uploader('**:grey[Upload image in PNG format]**', type='png') 
+        # upload images 
+        st.session_state.anlyzImg1_input = procContainer.file_uploader('**:grey[Upload image in PNG format]**', type= ['jpg', 'jpeg', 'png']) 
         if st.session_state.anlyzImg1_input is not None:
             imgName = st.session_state.anlyzImg1_input.name
             image = Image.open(st.session_state.anlyzImg1_input)
@@ -296,5 +297,5 @@ def main():
             procContainer.write(answer) 
 
 
-
+# run main 
 main()

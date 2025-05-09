@@ -2,7 +2,7 @@ name: init
 
 on:
   push:
-    branches: [ main ]  # or any branch you prefer
+    branches: [ main ]  # when pushing to main branch 
 
 jobs:
   run-script:
@@ -15,7 +15,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10.6'
-
-      - name: Install dependencies
+          python-version: '3.10.6'  #python version 
+      
+      # install dependencies 
+      - name: Install dependencies  
         run: pip install -r requirements.txt
