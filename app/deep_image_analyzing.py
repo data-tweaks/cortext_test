@@ -229,7 +229,12 @@ def main():
             leftImage.write(img1Type)
             image1 = Image.open(st.session_state.Compimg1_input)
             buffer = io.BytesIO()
-            image1.save(buffer, format= img1Type)
+            # compressing images if they are jpeg as the large sizes are not acceptable
+            if img1Type in ['jpg', 'jpeg']:
+                   image1 = image1.convert("RGB")  # Ensure JPEG is in RGB mode
+                   image1.save(buffer, format=img1Type, quality=70, optimize=True)  # Lower quality = smaller file
+            else:
+                image1.save(buffer, format=img1Type.upper())
             buffer.seek(0)
             with open(f"/tmp/{img1Name}", "wb") as f:
                 f.write(buffer.read())     
@@ -242,7 +247,12 @@ def main():
             img2Type = img2Name.split('.')[-1].lower()
             image2 = Image.open(st.session_state.CompImg2_input)
             buffer = io.BytesIO()
-            image2.save(buffer, format= img2Type)
+            # compressing images if they are jpeg as the large sizes are not acceptable
+            if img2Type in ['jpg', 'jpeg']:
+                   image2 = image2.convert("RGB")  # Ensure JPEG is in RGB mode
+                   image2.save(buffer, format=img2Type, quality=70, optimize=True)  # Lower quality = smaller file
+            else:
+                image2.save(buffer, format=img2Type.upper())
             buffer.seek(0)
             with open(f"/tmp/{img2Name}", "wb") as f:
                 f.write(buffer.read())
@@ -251,12 +261,10 @@ def main():
         if st.session_state.CompImg2_input  is not None and  st.session_state.Compimg1_input is not None:  
             leftImage.write(image1)
             leftImage.write(f" **:grey[Image 1 :]** {img1Name} ")
-            leftImage.write("Went through ")
-            st.session_state.demo_session.file.put(f"/tmp/{img1Name}", "@IMAGE_REP", auto_compress=True)
-            leftImage.write("Went through2")      
+            st.session_state.demo_session.file.put(f"/tmp/{img1Name}", "@IMAGE_REP", auto_compress=False)  
             rightImage.write(image2)
             rightImage.write(f" **:grey[Image 2 :]** {img2Name} ")
-            st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=True)
+            st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=False)
 
         # compare the images 
         if img2Name != "" and img1Name != "": 
