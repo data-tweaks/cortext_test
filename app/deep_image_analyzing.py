@@ -228,23 +228,18 @@ def main():
             img1Type = img1Name.split('.')[-1].lower()
             leftImage.write(img1Type)
             image1 = Image.open(st.session_state.Compimg1_input)
-            leftImage.write("Went through")
             buffer = io.BytesIO()
-            leftImage.write("Went through 2")
             image1.save(buffer, format= img1Type)
-            leftImage.write("Went through 3")
             buffer.seek(0)
-            leftImage.write("Went through 4")
             with open(f"/tmp/{img1Name}", "wb") as f:
                 f.write(buffer.read())     
-            leftImage.write("Went through 5")    
    
         # upload a file in jpg, jpeg or png mode 
         st.session_state.CompImg2_input = rightImage.file_uploader('**:grey[Upload the second image in PNG format]**',type= ['jpg', 'jpeg', 'png']) 
         # if file is uploaded then open the image 
         if st.session_state.CompImg2_input is not None:
             img2Name = st.session_state.CompImg2_input.name
-            img2Type = img2Type.split('.')[-1].lower()
+            img2Type = img2Name.split('.')[-1].lower()
             image2 = Image.open(st.session_state.CompImg2_input)
             buffer = io.BytesIO()
             image2.save(buffer, format= img2Type)
@@ -256,9 +251,9 @@ def main():
         if st.session_state.CompImg2_input  is not None and  st.session_state.Compimg1_input is not None:  
             leftImage.write(image1)
             leftImage.write(f" **:grey[Image 1 :]** {img1Name} ")
-            leftImage.write("Went through 6 ")
+            leftImage.write("Went through ")
             st.session_state.demo_session.file.put(f"/tmp/{img1Name}", "@IMAGE_REP", auto_compress=True)
-            leftImage.write("Went through 7")      
+            leftImage.write("Went through2")      
             rightImage.write(image2)
             rightImage.write(f" **:grey[Image 2 :]** {img2Name} ")
             st.session_state.demo_session.file.put(f"/tmp/{img2Name}", "@IMAGE_REP", auto_compress=True)
