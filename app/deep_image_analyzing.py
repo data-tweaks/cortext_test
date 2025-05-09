@@ -232,7 +232,7 @@ def main():
             # compressing images if they are jpeg as the large sizes are not acceptable
             if img1Type in ['jpg', 'jpeg']:
                    image1 = image1.convert("RGB")  # Ensure JPEG is in RGB mode
-                   image1.save(buffer, format=img1Type, quality=70, optimize=True)  # Lower quality = smaller file
+                   image1.save(buffer, format='JPEG', quality=70, optimize=True)  # Lower quality = smaller file
             else:
                 image1.save(buffer, format=img1Type.upper())
             buffer.seek(0)
@@ -250,7 +250,7 @@ def main():
             # compressing images if they are jpeg as the large sizes are not acceptable
             if img2Type in ['jpg', 'jpeg']:
                    image2 = image2.convert("RGB")  # Ensure JPEG is in RGB mode
-                   image2.save(buffer, format=img2Type, quality=70, optimize=True)  # Lower quality = smaller file
+                   image2.save(buffer, format='JPEG', quality=70, optimize=True)  # Lower quality = smaller file
             else:
                 image2.save(buffer, format=img2Type.upper())
             buffer.seek(0)
